@@ -1,3 +1,12 @@
+// Imports
+// Importing core libraries
+import 'dart:math';
+
+// Importing libraries from external packages
+// import 'package:test/test.dart';
+
+// Importing files
+// import 'path/to/my_other_file.dart';
 
 void main() {
   print("Hello World");
@@ -47,10 +56,46 @@ void Play() {
   /// doc comments specially.
 
   /* Comments like these are also supported. */
+
+  // Classed
+  var voyager = Spacecraft('Voyager I', DateTime(1977, 9, 5));
+  voyager.describe();
+
+  var voyager3 = Spacecraft.unlaunched('Voyager III');
+  voyager3.describe();
+
 }
 
 // Functions
 int fibonacci(int n) {
   if (n == 0 || n == 1) return n;
   return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+//Classes
+class Spacecraft {
+  String name;
+  DateTime launchDate;
+
+  // Constructor, with syntactic sugar for assignment to members.
+  Spacecraft(this.name, this.launchDate) {
+    // Initialization code goes here.
+  }
+
+  // Named constructor that forwards to the default one.
+  Spacecraft.unlaunched(String name) : this(name, null);
+
+  int get launchYear => launchDate?.year; // read-only non-final property
+
+  // Method.
+  void describe() {
+    print('Spacecraft: $name');
+    if (launchDate != null) {
+      int years = DateTime.now().difference(launchDate).inDays ~/ 365;
+      print('Launched: $launchYear ($years years ago)');
+    } else {
+      print('Unlaunched');
+    }
+  }
+
 }
