@@ -1,6 +1,7 @@
 // Imports
 // Importing core libraries
 import 'dart:math';
+import 'dart:io';
 
 // Importing libraries from external packages
 // import 'package:test/test.dart';
@@ -64,6 +65,40 @@ void Play() {
   var voyager3 = Spacecraft.unlaunched('Voyager III');
   voyager3.describe();
 
+  // Inheritance
+  var voyager4InOrbiter = Orbiter('Voyager IV', DateTime(2022, 10, 25), 10000);
+  voyager4InOrbiter.describe();
+
+  // Async
+  printWithDelay('message');
+  print('How about main thread');
+
+  createDescriptions({'test1','test2'});
+  // How to use report()?
+
+  
+  // Exceptions
+  var piloted = Piloted();
+  if (piloted.astronauts == 0) {
+    throw StateError('No astronauts.');
+  }
+  tryException(['test1','test2']);
+
+}
+
+// Exceptions
+Future<void> tryException(List<String> flybyObject) async {
+  try {
+    for (var object in flybyObject) {
+      var description = await File('$object.txt').readAsString();
+      print(description);
+    }
+  } on IOException catch (e) {
+    print('Could not describe object: $e');
+  } finally {
+    flybyObject.clear();
+  }
+
 }
 
 // Functions
@@ -92,10 +127,91 @@ class Spacecraft {
     print('Spacecraft: $name');
     if (launchDate != null) {
       int years = DateTime.now().difference(launchDate).inDays ~/ 365;
-      print('Launched: $launchYear ($years years ago)');
+      if (years >= 0) {
+        print('Launched: $launchYear ($years years ago)');
+      } else {
+        print('Will Launche: $launchYear (${years.abs()} years later)');
+      }
     } else {
       print('Unlaunched');
     }
   }
 
+}
+
+// Inheritance
+class Orbiter extends Spacecraft {
+  num altitude;
+  Orbiter(String name, DateTime launchDate, this.altitude) : super(name,launchDate);
+
+  @override
+  void describe() {
+    super.describe();
+    print('Attach $altitude meter');
+  }
+}
+
+// Mixins
+class Piloted {
+  int astronauts = 1;
+  // int name;
+  void describeCrew() {
+    print('Number of astronauts: $astronauts');
+  }
+}
+
+class PilotedCraft extends Spacecraft with Piloted {
+  PilotedCraft() : super.unlaunched('Empty');
+}
+
+// Interfaces and abstract classes
+// class MockSpaceship implements Spacecraft {
+// }
+// Make be comment, avoid constructor error.
+
+abstract class Describable {
+  void describe();
+
+  void describeWithEmphasis() {
+    print('======');
+    describe();
+    print('======');
+  }
+}
+
+// Async
+const oneSecond = Duration(seconds: 1);
+
+Future<void> printWithDelay(String message) async {
+  await Future.delayed(oneSecond);
+  print(message);
+}
+Future<void> printWithDelayOriginal(String message) {
+  return Future.delayed(oneSecond).then((_) {
+    print(message);
+  });
+}
+
+Future<void> createDescriptions(Iterable<String> objects) async {
+  for (var object in objects) {
+    try {
+      var file = File('$object.txt');
+      if (await file.exists()) {
+        var modified = await file.lastModified();
+        print('File for $object already existe. It was modified on $modified.');
+        continue;
+      }
+      await file.create();
+      await file.writeAsString('Start describing $object in this file.');
+    } on IOException catch (e) {
+      print('Cannot create description for $object: $e');
+    }
+  }
+}
+
+Stream<String> report(Spacecraft craft, Iterable<String> objects) async* {
+  for (var object in objects) {
+    await Future.delayed(oneSecond);
+    yield '${craft.name} files by $object';
+  }
 }
